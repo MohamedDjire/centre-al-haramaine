@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * Copier ce fichier en local.php et adapter (local.php ne doit pas être commité).
+ * Hébergement LWS / mutualisé : renseigner l’hôte MySQL fourni dans le panel (souvent mysqlXXXX.lwspanel.com).
+ */
+return [
+    'db_host' => 'localhost',
+    'db_user' => 'votre_user_mysql',
+    'db_password' => 'votre_mot_de_passe_mysql',
+    'db_name' => 'votre_base',
+    /** Préfixe logique (sans _) : tables = {prefix}_inscriptions, {prefix}_admins, {prefix}_admin_tokens */
+    'table_prefix' => 'chmc',
+    /**
+     * Origines autorisées pour le frontend (CORS). Laissez vide ou absent = Access-Control-Allow-Origin: *
+     * Exemple production (adapter au domaine réel du site React) :
+     * 'cors_allowed_origins' => [ 'https://www.damastudio.org', 'https://damastudio.org' ],
+     */
+    'cors_allowed_origins' => [],
+];
