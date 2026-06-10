@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { api } from '../api/client.js';
 import { WAVE_NUMBER, waveInscriptionLink } from '../config/contact.js';
 import { formatMontant, getPremierVersement, getTotalFrais } from '../config/frais.js';
+import { PIECES_PHYSIQUES_CENTRE, TITRE_PIECES_PHYSIQUES } from '../config/pieces.js';
 
 const niveaux = [
   'Maternelle (4-5 ans)',
@@ -569,19 +570,13 @@ export default function Inscription() {
             </svg>
             <div>
               <h3 className="text-sm font-bold text-amber-900">
-                Pièces à fournir physiquement au centre
+                {TITRE_PIECES_PHYSIQUES}
               </h3>
               <p className="mt-1 text-sm text-amber-800">
-                Après votre pré-inscription en ligne, veuillez vous présenter au centre avec les documents originaux suivants :
+                Après votre inscription en ligne et l&apos;impression de la fiche, présentez-vous au centre avec :
               </p>
               <ul className="mt-3 space-y-1.5 text-sm text-amber-800">
-                {[
-                  "Extrait d'acte de naissance ou jugement supplétif (original + copie)",
-                  'Dernier bulletin scolaire (original + copie)',
-                  "4 photos d'identité récentes",
-                  'Certificat de résidence',
-                  "Copie de la carte d'identité du parent / tuteur",
-                ].map((item) => (
+                {PIECES_PHYSIQUES_CENTRE.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

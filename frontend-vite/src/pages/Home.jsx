@@ -4,18 +4,9 @@ import { PHONE_DISPLAY, whatsappLink } from '../config/contact.js';
 import { getFraisTableDisplay } from '../config/frais.js';
 import { useActualites } from '../hooks/useActualites.js';
 import { actuImageUrl } from '../utils/media.js';
+import { PIECES_PHYSIQUES_AFFICHAGE, TITRE_PIECES_PHYSIQUES } from '../config/pieces.js';
 
 const fraisScolarite = getFraisTableDisplay();
-
-const dossierPieces = [
-  { label: 'Copie d\'acte de naissance', icon: '📄' },
-  { label: '4 photos d\'identité', icon: '📸' },
-  { label: 'Bulletin année précédente 2024-2025', icon: '📋' },
-  { label: 'Chemise cartonnée à rabat (jaune)', icon: '📁' },
-  { label: 'Fiche d\'engagement signée sur place', icon: '✍️' },
-  { label: 'Droits d\'examen : 15 500F', icon: '💰' },
-  { label: 'Un paquet de rame A4', icon: '📦' },
-];
 
 const tenuesPrix = [
   { niveau: 'CP1 – CP2', prix: '5 000F' },
@@ -287,15 +278,15 @@ export default function Home() {
             📝 Dossier d'inscription
           </p>
           <h2 className="mt-2 text-center text-3xl font-bold text-emerald-900 sm:text-4xl">
-            Pièces à fournir
+            {TITRE_PIECES_PHYSIQUES}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-base text-slate-600">
-            Constituez votre dossier complet avec les documents suivants pour finaliser
-            l'inscription de votre enfant au Centre Al Haramaine.
+            Après l&apos;inscription en ligne, présentez-vous au centre avec les documents
+            physiques suivants pour finaliser l&apos;inscription de votre enfant.
           </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            {dossierPieces.map((piece) => (
+            {PIECES_PHYSIQUES_AFFICHAGE.map((piece) => (
               <div
                 key={piece.label}
                 className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"

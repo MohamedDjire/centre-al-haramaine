@@ -3,16 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { PHONE_DISPLAY, PHONE_SECONDARY } from '../config/contact.js';
 import { formatMontant } from '../config/frais.js';
-
-const PIECES_PHYSIQUES = [
-  "Extrait d'acte de naissance ou jugement supplétif (original + copie)",
-  'Dernier bulletin scolaire (original + copie)',
-  "4 photos d'identité récentes",
-  'Certificat de résidence',
-  "Copie de la carte d'identité du parent / tuteur",
-  'Chemise cartonnée à rabat (jaune)',
-  'Un paquet de rame A4',
-];
+import { PIECES_PHYSIQUES_CENTRE, TITRE_PIECES_PHYSIQUES } from '../config/pieces.js';
 
 function Field({ label, value }) {
   return (
@@ -172,10 +163,10 @@ export default function InscriptionFiche() {
         {/* Pièces à apporter */}
         <section className="mt-6">
           <h2 className="mb-2 border-l-4 border-emerald-700 pl-3 text-sm font-bold uppercase text-emerald-900">
-            Pièces à apporter au centre (originaux)
+            {TITRE_PIECES_PHYSIQUES}
           </h2>
           <ul className="list-inside list-disc space-y-1 text-sm text-slate-700">
-            {PIECES_PHYSIQUES.map((p) => (
+            {PIECES_PHYSIQUES_CENTRE.map((p) => (
               <li key={p}>{p}</li>
             ))}
           </ul>
