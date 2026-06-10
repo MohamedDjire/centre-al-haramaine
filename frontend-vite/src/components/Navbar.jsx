@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 const linkClass = ({ isActive }) =>
-  `rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+  `link-interactive cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
     isActive
       ? 'bg-emerald-800 text-white shadow-sm'
-      : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
+      : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:shadow-sm'
   }`;
 
 const mobileLinkClass = ({ isActive }) =>
-  `block rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ${
+  `link-interactive cursor-pointer block rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${
     isActive
       ? 'bg-emerald-800 text-white'
       : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
@@ -18,6 +18,7 @@ const mobileLinkClass = ({ isActive }) =>
 const navLinks = [
   { to: '/', label: 'Accueil', end: true },
   { to: '/a-propos', label: 'À propos' },
+  { to: '/actualites', label: 'Actualités' },
   { to: '/inscription', label: 'Inscription' },
   { to: '/contact', label: 'Contact' },
 ];
@@ -28,7 +29,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-md backdrop-blur-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <NavLink to="/" className="flex items-center gap-3">
+        <NavLink to="/" className="link-interactive flex cursor-pointer items-center gap-3 transition-opacity hover:opacity-90">
           <img
             src="/assets/logo-principal.png"
             alt="Centre Al Haramaine"
@@ -56,7 +57,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setMenuOpen((prev) => !prev)}
-          className="inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 md:hidden"
+          className="btn-interactive inline-flex cursor-pointer items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 md:hidden"
           aria-label="Menu"
           aria-expanded={menuOpen}
         >
@@ -73,7 +74,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <nav className="border-t border-slate-100 bg-white px-4 pb-4 pt-2 md:hidden">
+        <nav className="animate-slide-down border-t border-slate-100 bg-white px-4 pb-4 pt-2 md:hidden">
           <div className="flex flex-col gap-1">
             {navLinks.map(({ to, label, end }) => (
               <NavLink

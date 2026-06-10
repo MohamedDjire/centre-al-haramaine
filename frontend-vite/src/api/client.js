@@ -5,6 +5,7 @@ const baseURL = import.meta.env.VITE_API_URL || 'http://localhost/Centre_Al_Hara
 export const api = axios.create({
   baseURL,
   withCredentials: false,
+  timeout: 15000,
 });
 
 api.interceptors.request.use((config) => {

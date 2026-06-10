@@ -8,6 +8,8 @@ frontend/build/
 
 # === Backend secrets ===
 backend/config/local.php
+backend/api/create_test_admin.php
+deploy_ftp.ps1
 backend/uploads/*
 !backend/uploads/.gitkeep
 !backend/uploads/.htaccess

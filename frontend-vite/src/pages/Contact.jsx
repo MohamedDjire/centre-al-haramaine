@@ -1,3 +1,6 @@
+import WavePayment from '../components/WavePayment.jsx';
+import { PHONE_DISPLAY, PHONE_SECONDARY, PHONE_SECONDARY_TEL, PHONE_TEL, whatsappLink } from '../config/contact.js';
+
 export default function Contact() {
   const horaires = [
     { jour: 'Lundi – Vendredi', heures: '07 h 30 – 17 h 00' },
@@ -29,11 +32,11 @@ export default function Contact() {
           </span>
           <h2 className="text-lg font-bold text-emerald-900">Téléphone</h2>
           <div className="mt-3 space-y-1 text-sm text-slate-700">
-            <a href="tel:+2250505955039" className="block font-medium text-emerald-800 hover:underline">
-              05 05 95 50 39
+            <a href={`tel:${PHONE_TEL}`} className="block font-medium text-emerald-800 hover:underline">
+              {PHONE_DISPLAY}
             </a>
-            <a href="tel:+2250747490030" className="block font-medium text-emerald-800 hover:underline">
-              07 47 49 00 30
+            <a href={`tel:${PHONE_SECONDARY_TEL}`} className="block font-medium text-emerald-800 hover:underline">
+              {PHONE_SECONDARY}
             </a>
           </div>
         </div>
@@ -47,14 +50,14 @@ export default function Contact() {
           </span>
           <h2 className="text-lg font-bold text-emerald-900">WhatsApp</h2>
           <a
-            href="https://wa.me/2250505955039"
+            href={whatsappLink()}
             target="_blank"
             rel="noreferrer"
             className="mt-3 inline-block text-sm font-medium text-green-700 hover:underline"
           >
-            05 05 95 50 39
+            {PHONE_DISPLAY}
           </a>
-          <p className="mt-1 text-xs text-slate-500">Réponse rapide par message</p>
+          <p className="mt-1 text-xs text-slate-500">Réponse rapide — paiement Wave sur ce numéro</p>
         </div>
 
         {/* Adresse */}
@@ -75,6 +78,9 @@ export default function Contact() {
           </p>
         </div>
       </section>
+
+      {/* ── Paiement Wave ── */}
+      <WavePayment />
 
       {/* ── Horaires d'ouverture ── */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -99,7 +105,7 @@ export default function Contact() {
           Centre Al Haramaine directement sur WhatsApp.
         </p>
         <a
-          href="https://wa.me/2250505955039"
+          href={whatsappLink()}
           target="_blank"
           rel="noreferrer"
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-emerald-900 shadow transition hover:bg-emerald-50"

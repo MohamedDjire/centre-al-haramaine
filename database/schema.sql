@@ -52,9 +52,51 @@ CREATE TABLE IF NOT EXISTS chmc_admin_tokens (
     CONSTRAINT fk_chmc_admin_tokens_admin FOREIGN KEY (admin_id) REFERENCES chmc_admins(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Compte par défaut : admin / Admin@2026 (à changer après installation)
-INSERT IGNORE INTO chmc_admins (username, password_hash)
+-- Compte par défaut (à changer après installation)
+-- Après import SQL, exécutez : php database/fix_admin_password.php
+INSERT INTO chmc_admins (username, password_hash)
 VALUES (
-    'admin',
-    '$2y$10$WaZJ0hvZQT/QXlePrZLINursvXvMlBjI7p7MrrGw7horOMh2l1IoO'
-);
+    'resp.haramaine',
+    '$2y$10$rKG9mscs6kZ7q1BjgnR1yO.eaQdJGGJQVUEGyUrC2HOEdHvYhaahC'
+)
+ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash);
+
+-- Paiement Wave (inscription en ligne)
+-- Si erreur "Duplicate column", commentez ces lignes.
+ALTER TABLE chmc_inscriptions ADD COLUMN statut VARCHAR(30) DEFAULT 'validee' AFTER document_photo;
+ALTER TABLE chmc_inscriptions ADD COLUMN wave_checkout_id VARCHAR(64) NULL AFTER statut;
+ALTER TABLE chmc_inscriptions ADD COLUMN wave_client_ref VARCHAR(64) NULL AFTER wave_checkout_id;
+ALTER TABLE chmc_inscriptions ADD COLUMN fiche_token VARCHAR(64) NULL AFTER wave_client_ref;
+
+-- Colonne matricule (identifiant unique élève, généré automatiquement)
+-- Si erreur "Duplicate column", commentez cette ligne.
+ALTER TABLE chmc_inscriptions ADD COLUMN matricule VARCHAR(20) NULL AFTER id;
+ALTER TABLE chmc_inscriptions ADD UNIQUE INDEX idx_matricule (matricule);
+
+-- Table des paiements (suivi mensuel par élève)
+CREATE TABLE IF NOT EXISTS chmc_paiements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inscription_id INT NOT NULL,
+    mois VARCHAR(20) NOT NULL,
+    annee_scolaire VARCHAR(20) NOT NULL DEFAULT '2025-2026',
+    montant DECIMAL(10,2) NOT NULL DEFAULT 0,
+    montant_paye DECIMAL(10,2) NOT NULL DEFAULT 0,
+    statut ENUM('non_paye','partiel','paye') DEFAULT 'non_paye',
+    date_paiement DATE NULL,
+    note TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_chmc_paiements_insc FOREIGN KEY (inscription_id) REFERENCES chmc_inscriptions(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_paiement_mois (inscription_id, mois, annee_scolaire)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table des actualités (l'admin publie, le public consulte)
+CREATE TABLE IF NOT EXISTS chmc_actualites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titre VARCHAR(255) NOT NULL,
+    contenu TEXT NOT NULL,
+    image VARCHAR(255) NULL,
+    publie TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

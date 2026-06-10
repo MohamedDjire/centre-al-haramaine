@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { api } from '../api/client.js';
+import { WAVE_NUMBER, waveInscriptionLink } from '../config/contact.js';
+import { formatMontant, getPremierVersement, getTotalFrais } from '../config/frais.js';
 
 const niveaux = [
   'Maternelle (4-5 ans)',
@@ -15,6 +17,7 @@ const STEPS = [
   { id: 1, label: 'Informations élève' },
   { id: 2, label: 'Informations parent' },
   { id: 3, label: 'Pièces jointes' },
+  { id: 4, label: 'Paiement Wave' },
 ];
 
 const initial = {
@@ -194,6 +197,9 @@ export default function Inscription() {
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
 
+  const premierVersement = form.niveau ? getPremierVersement(form.niveau) : 15000;
+  const eleveLabel = [form.prenom, form.nom].filter(Boolean).join(' ') || 'Mon enfant';
+
   function onChange(e) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
@@ -236,7 +242,7 @@ export default function Inscription() {
 
   function goNext() {
     if (!validateStep(step)) return;
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, 4));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -246,31 +252,53 @@ export default function Inscription() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    if (!validateStep(3)) return;
-
+  function buildFormData() {
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
     fd.append('acte_naissance', files.acte);
     fd.append('bulletin', files.bulletin);
     fd.append('photo', files.photo);
+    return fd;
+  }
+
+  async function payWithWave() {
+    if (!validateStep(3)) return;
 
     setLoading(true);
     setStatus({ type: '', message: '' });
     try {
-      const { data } = await api.post('/inscription.php', fd);
-      setStatus({ type: 'success', message: data.message || 'Inscription enregistrée avec succès ! Nous vous contacterons prochainement.' });
-      setForm(initial);
-      setFiles({ acte: null, bulletin: null, photo: null });
-      setStep(1);
-      formRef.current?.reset();
+      const { data: prep } = await api.post('/inscription_prepare.php', buildFormData());
+      if (!prep.ok && !prep.inscription_id) {
+        throw new Error(prep.message || 'Erreur préparation');
+      }
+
+      const { data: checkout } = await api.post('/wave_checkout.php', {
+        inscription_id: prep.inscription_id,
+      });
+
+      if (checkout.code === 'wave_not_configured') {
+        setStatus({
+          type: 'error',
+          message: 'Le paiement Wave n\'est pas encore activé sur le serveur. L\'administrateur doit configurer la clé API Wave.',
+        });
+        return;
+      }
+
+      if (!checkout.wave_launch_url) {
+        throw new Error(checkout.message || 'Lien de paiement Wave indisponible');
+      }
+
+      sessionStorage.setItem('chmc_pending_inscription', String(prep.inscription_id));
+      window.location.href = checkout.wave_launch_url;
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Une erreur est survenue. Veuillez réessayer.';
+      const msg = err.response?.data?.message || err.message || 'Impossible de lancer le paiement Wave.';
       setStatus({ type: 'error', message: msg });
-    } finally {
       setLoading(false);
     }
+  }
+
+  function onSubmit(e) {
+    e.preventDefault();
   }
 
   const summaryFields = [
@@ -346,7 +374,7 @@ export default function Inscription() {
                 </h2>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <InputField label="Nom" name="nom" value={form.nom} onChange={onChange} placeholder="Ex : Diallo" />
-                  <InputField label="Prénom" name="prenom" value={form.prenom} onChange={onChange} placeholder="Ex : Aminata" />
+                  <InputField label="Prénom" name="prenom" value={form.prenom} onChange={onChange} placeholder="Ex : Mamadou" />
                   <SelectField
                     label="Sexe"
                     name="sexe"
@@ -472,6 +500,33 @@ export default function Inscription() {
                 </div>
               </div>
             )}
+
+            {step === 4 && (
+              <div className="space-y-6">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1DC8FF] text-xs font-bold text-white">4</span>
+                  Paiement du 1er versement par Wave
+                </h2>
+                <div className="rounded-xl border-2 border-[#1DC8FF]/40 bg-sky-50 p-5">
+                  <p className="text-sm text-slate-700">Pour <strong>{eleveLabel}</strong> — <strong>{form.niveau}</strong></p>
+                  <p className="mt-3 text-3xl font-extrabold text-[#0077B6]">{formatMontant(premierVersement)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Total annuel : {formatMontant(getTotalFrais(form.niveau))}</p>
+                </div>
+                <p className="text-sm leading-relaxed text-slate-600">
+                  Vous serez redirigé vers l&apos;application <strong>Wave</strong> pour payer le 1er versement en ligne.
+                  Après le paiement, <strong>imprimez votre fiche d&apos;inscription</strong> et présentez-vous au centre
+                  pour signature par le responsable de l&apos;établissement.
+                </p>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={payWithWave}
+                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#1DC8FF] py-4 text-base font-bold text-white shadow-lg transition hover:bg-[#0eb5ef] disabled:opacity-60"
+                >
+                  {loading ? 'Préparation du paiement…' : `Payer ${formatMontant(premierVersement)} avec Wave`}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* ── Navigation ── */}
@@ -491,41 +546,18 @@ export default function Inscription() {
               <span />
             )}
 
-            {step < 3 ? (
+            {step < 4 ? (
               <button
                 type="button"
                 onClick={goNext}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800"
               >
-                Suivant
+                {step === 3 ? 'Paiement Wave →' : 'Suivant'}
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
               </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Envoi en cours…
-                  </>
-                ) : (
-                  <>
-                    Envoyer l'inscription
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            )}
+            ) : null}
           </div>
         </form>
 

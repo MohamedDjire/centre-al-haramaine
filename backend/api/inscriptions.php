@@ -14,7 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 chmc_require_admin_id($conn);
 
 $t = chmc_tbl('inscriptions');
-$sql = "SELECT id, nom, prenom, sexe, date_naissance, niveau, parent_nom, telephone, whatsapp, adresse, document, document_bulletin, document_photo, created_at FROM `{$t}` ORDER BY id DESC";
+$sql = "SELECT id, matricule, nom, prenom, sexe, date_naissance, niveau, parent_nom, telephone, whatsapp, adresse,
+               document, document_bulletin, document_photo, statut, fiche_token, created_at
+        FROM `{$t}`
+        WHERE statut IN ('validee', 'en_attente_validation') OR statut IS NULL
+        ORDER BY FIELD(statut, 'en_attente_validation', 'validee'), id DESC";
 $result = $conn->query($sql);
 
 $rows = [];

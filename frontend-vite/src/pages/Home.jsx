@@ -1,28 +1,11 @@
 import { Link } from 'react-router-dom';
+import WavePayment from '../components/WavePayment.jsx';
+import { PHONE_DISPLAY, whatsappLink } from '../config/contact.js';
+import { getFraisTableDisplay } from '../config/frais.js';
+import { useActualites } from '../hooks/useActualites.js';
+import { actuImageUrl } from '../utils/media.js';
 
-const fraisScolarite = [
-  {
-    niveau: 'Maternelle (4-5 ans)',
-    inscription: '15 000F',
-    deuxieme: '7 500F',
-    troisieme: '7 500F',
-    total: '30 000F',
-  },
-  {
-    niveau: 'Primaire (CP1-CM1)',
-    inscription: '15 000F',
-    deuxieme: '5 000F',
-    troisieme: '5 000F',
-    total: '25 000F',
-  },
-  {
-    niveau: 'Primaire (CM2)',
-    inscription: '15 000F',
-    deuxieme: '5 000F',
-    troisieme: '5 000F',
-    total: '25 000F',
-  },
-];
+const fraisScolarite = getFraisTableDisplay();
 
 const dossierPieces = [
   { label: 'Copie d\'acte de naissance', icon: '📄' },
@@ -42,6 +25,8 @@ const tenuesPrix = [
 ];
 
 export default function Home() {
+  const { actus } = useActualites();
+
   return (
     <div className="space-y-0">
       {/* ═══════════════════════════════════════════════════════════════
@@ -124,6 +109,75 @@ export default function Home() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
+          ACTUALITÉS
+      ═══════════════════════════════════════════════════════════════ */}
+      {actus.length > 0 && (() => {
+        const top3 = actus.slice(0, 3);
+        const main = top3[0];
+        const side = top3.slice(1);
+
+        return (
+          <section className="bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-6xl">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Actualités</h2>
+                <Link to="/actualites" className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+                  Voir tout →
+                </Link>
+              </div>
+
+              <div className="grid h-[420px] gap-3 sm:grid-cols-2">
+                <Link to="/actualites" className="group relative block h-full overflow-hidden rounded-2xl sm:row-span-2">
+                  <img
+                    src={actuImageUrl(main.image, 720) || '/assets/banniere.png'}
+                    alt={main.titre}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <span className="mb-2 inline-block rounded-full bg-emerald-600 px-3 py-0.5 text-[11px] font-bold uppercase text-white">
+                      Nouveau
+                    </span>
+                    <h3 className="text-lg font-bold leading-snug text-white sm:text-xl">{main.titre}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm text-white/70">{main.contenu}</p>
+                  </div>
+                </Link>
+
+                {side.map((a) => (
+                  <Link to="/actualites" key={a.id} className="group relative block overflow-hidden rounded-2xl">
+                    <img
+                      src={actuImageUrl(a.image, 400) || '/assets/banniere.png'}
+                      alt={a.titre}
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="text-sm font-bold leading-snug text-white sm:text-base">{a.titre}</h3>
+                      <p className="mt-0.5 line-clamp-1 text-xs text-white/60">{a.contenu}</p>
+                    </div>
+                  </Link>
+                ))}
+
+                {side.length < 2 && (
+                  <Link
+                    to="/actualites"
+                    className="flex items-center justify-center rounded-2xl bg-emerald-900/10 text-sm font-semibold text-slate-400"
+                  >
+                    Plus d&apos;actualités bientôt...
+                  </Link>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════════════════════
           QUI SOMMES-NOUS — 3 cartes
       ═══════════════════════════════════════════════════════════════ */}
       <section className="bg-gray-50 px-4 py-20 sm:px-6 lg:px-8">
@@ -182,8 +236,8 @@ export default function Home() {
             Modalités de paiement 2025-2026
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-base text-slate-600">
-            Les frais sont payables en trois versements échelonnés sur l'année scolaire
-            pour faciliter la gestion financière des familles.
+            Les frais sont payables en trois versements. Le <strong>1er versement</strong> se règle
+            automatiquement par <strong>Wave</strong> lors de l&apos;inscription en ligne.
           </p>
 
           <div className="mt-12 overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
@@ -217,6 +271,10 @@ export default function Home() {
           <p className="mt-6 text-center text-sm text-slate-500">
             ⚠️ Droits d'examen en sus : <strong className="text-emerald-800">15 500F</strong> (inclus dans le dossier d'inscription)
           </p>
+
+          <div className="mt-10">
+            <WavePayment />
+          </div>
         </div>
       </section>
 
@@ -370,22 +428,22 @@ export default function Home() {
               📝 S'inscrire en ligne
             </Link>
             <a
-              href="https://wa.me/2250505955039"
+              href={whatsappLink()}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full border-2 border-white/40 px-10 py-4 text-sm font-bold uppercase tracking-wider text-white transition hover:border-white hover:bg-white/10"
             >
-              💬 Contacter via WhatsApp
+              💬 WhatsApp
             </a>
+            <WavePayment compact />
           </div>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-emerald-200/70">
             <span>📍 Abobo PK18, Bois Sec Marché, derrière le moulin</span>
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-emerald-200/70">
-            <span>📞 05 05 95 50 39</span>
-            <span>📞 07 47 49 00 30</span>
-            <span>📱 WhatsApp : 05 05 95 50 39</span>
+            <span>📞 {PHONE_DISPLAY}</span>
+            <span>📱 Wave &amp; WhatsApp : {PHONE_DISPLAY}</span>
           </div>
         </div>
       </section>
